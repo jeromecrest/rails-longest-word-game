@@ -11,7 +11,6 @@ class GamesController < ApplicationController
     url = 'https://wagon-dictionary.herokuapp.com/' + attempt
     array = open(url).read
     word_exist = JSON.parse(array)
-    elapsed = 0
     attempt_hash = {}
     grid_hash = {}
     attempt.split('').each do |key|
@@ -25,17 +24,22 @@ class GamesController < ApplicationController
       grid_hash[k] >= v if grid_hash[k].nil? == false
     end
     if !condition
-      score = 0
+      score_p = 0
       message = "Sorry, but #{attempt} cannot built out of #{grid.join(', ')}"
 
     elsif word_exist['found'] == false
-      score = 0
+      score_p = 0
       message = "Sorry, but #{attempt} does not seem to be a valid English word..."
     else
-      score = - elapsed + attempt.split('').length
+      score_p = attempt.split('').length
       message = "Congratulations ! #{attempt} is a valid English word!"
     end
-    @result = { time: elapsed, score: score, message: message, grid: grid }
+    if session[:score].nil?
+      session[:score] = score_p
+    else
+      score_p += session[:score]
+    end
+    @result = { score: score_p, message: message }
   end
 
   def generate_grid(grid_size)
